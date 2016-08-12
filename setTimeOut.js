@@ -8,6 +8,13 @@
 // let mytimeout = setTimeout(myfunc,300);
 // clearTimeout(mytimeout);
 
-setTimeout(function () {
+/*setTimeout(function () {
     console.log('TIMED OUT!');
-},300);
+},300);*/
+'use strict';
+
+setTimeout(() => {
+    console.log("TIMED OUT!");
+},
+300
+);
