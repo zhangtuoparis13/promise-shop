@@ -22,12 +22,12 @@
 'use strict';
 
 function parsePromised(json) {
-    return new Promise((accept, reject) => {
+    return new Promise(function(fulfill, reject) {
         try {
-            var result = JSON.parse(json);
-            accept(result);
-        } catch (err) {
-            reject(err);
+            // var result = JSON.parse(json);
+            fulfill(JSON.parse(json));
+        } catch (e) {
+            reject(e);
         }
     });
 }
