@@ -32,33 +32,82 @@ var onReject = (error)=>{
 promise.catch(onReject);
 */
 
+// 'use strict';
+//
+// var message;
+// var promise;
+//
+// function randomBytes(n) {
+//     return (Math.random() * Math.pow(256, n) | 0).toString(16);
+// }
+//
+// message =
+//     'A fatal exception ' + randomBytes(1) + ' has occurred at ' +
+//     randomBytes(2) + ':' + randomBytes(4) + '. Your system\nwill be ' +
+//     'terminated in 3 seconds.';
+//
+// promise = Promise.reject(new Error(message));
+//
+// promise.catch(function (err) {
+//     var i = 3;
+//
+//     process.stderr.write(err.message);
+//
+//     setTimeout(function boom() {
+//         process.stderr.write('\rwill be terminated in ' + (--i) + ' seconds.');
+//         if (!i) {
+//             process.stderr.write('\n..... . . . boom . . . .....\n');
+//         } else {
+//             setTimeout(boom, 1000);
+//         }
+//     }, 1000);
+// });
+
 'use strict';
 
-var message;
-var promise;
+const cache = new Map();
 
-function randomBytes(n) {
-    return (Math.random() * Math.pow(256, n) | 0).toString(16);
+// simulates a database operation with terrible coding style
+function fetchData(key) {
+    return new Promise((accept, reject) => {
+        setTimeout(() => {
+            switch(key) {
+                case 'good stuff':
+                    return accept('Here\'s the good stuff!');
+                case 'bad stuff':
+                    return reject(new Error('whoopsie!'));
+            }
+        });
+    });
 }
 
-message =
-    'A fatal exception ' + randomBytes(1) + ' has occurred at ' +
-    randomBytes(2) + ':' + randomBytes(4) + '. Your system\nwill be ' +
-    'terminated in 3 seconds.';
+function getStuff(key) {
+    // test cache
+    if (cache.has(key)) {
+        console.log('cache hit "' + key + '"');
+        var value = cache.get(key);
+        return value instanceof Error ?
+            Promise.reject(value) :
+            Promise.resolve(value);
+    }
+    // not in cache, go to db, then store the result
+    console.log('cache miss "' + key + '"');
+    return fetchData(key)
+        .then(value => {
+            cache.set(key, value);
+            return value;
+        })
+        .catch(err => {
+            cache.set(key, err);
+            return Promise.reject(err);
+        });
+}
 
-promise = Promise.reject(new Error(message));
+getStuff('good stuff')
+    .then(val => console.log('val'))
+    .then(() => getStuff('good stuff'))
+    .then(val => console.log('val'));
 
-promise.catch(function (err) {
-    var i = 3;
-
-    process.stderr.write(err.message);
-
-    setTimeout(function boom() {
-        process.stderr.write('\rwill be terminated in ' + (--i) + ' seconds.');
-        if (!i) {
-            process.stderr.write('\n..... . . . boom . . . .....\n');
-        } else {
-            setTimeout(boom, 1000);
-        }
-    }, 1000);
+getStuff('bad stuff').catch(err => {
+    console.log(err.message);
 });
