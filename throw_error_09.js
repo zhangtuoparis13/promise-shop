@@ -21,10 +21,9 @@
 
 'use strict';
 
-function parsePromised(json) {
-    return new Promise(function(fulfill, reject) {
+function parsePromised (json) {
+    return new Promise(function (fulfill, reject) {
         try {
-            // var result = JSON.parse(json);
             fulfill(JSON.parse(json));
         } catch (e) {
             reject(e);
@@ -33,4 +32,6 @@ function parsePromised(json) {
 }
 
 parsePromised(process.argv[2])
-    .then(null,console.log);
+    .then(val => console.log(val))
+    .catch(err => console.log(err));
+
